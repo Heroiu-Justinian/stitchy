@@ -47,17 +47,7 @@ def split(image:Image,granulation:int):
         
         returns an array of images
     """
-    W,H = image.size
-    n = granulation
-    w,h = int(np.round(W/n)), int(np.round(H/n))
-    imgs = []
-
-    for i in range(h):
-        for j in range(w):
-            imgs.append(image.crop((j*n,i*n,(j+1)*n,(i+1)*n)))
-
-    return imgs
-
+    W,H = image.size[0]
 
 
 def main():
@@ -76,9 +66,8 @@ def main():
     # print(average_color(main)) 
     # print(most_common_color(main))
     # print(top_three_colors(main))
-    
-    for image in split(main,500):
-        image.show()
+    print(Image.size)
+
 if __name__ == "__main__":
     main()
 
