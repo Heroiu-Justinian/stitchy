@@ -12,10 +12,13 @@ def get_tiles(folder,size = 10):
     returns an array of Images 
     """
     p = os.getcwd()
-    tiles_names = [name for name in glob.glob(f'{p}/{folder}/*')]
+    tiles_names = [name for name in glob.glob(f'{p}{folder}/*')]
     tiles = []
+    print(tiles_names)
     for name in tiles_names:
+        print(name)
         tile = Image.open(name)
+        tile.show()
         tile = tile.resize((size,size))
         tiles.append(tile)
     return tiles
@@ -23,13 +26,7 @@ def get_tiles(folder,size = 10):
 def average_color(image):
     """get the average rgb color of the image"""
     npimg = np.array(image)
-    avg = np.round(np.average(npimg,axis=(0,1)))
-    if type(avg) is not type(npimg):
-        print(npimg)
-    print(npimg)
-
-    return avg
-
+    return tuple(np.round(np.average(npimg,axis=(0,1))))
 
 def most_common_color(image):
     """find the most common rgb color from an image"""
@@ -69,10 +66,9 @@ def best_match_index(color,colors_arr):
     """reuturns the best match for a given color out of a given colors array"""
     color = np.array(color)
     colors = np.array(colors_arr)
-    # color = np.expand_dims(color,axis = 1) 
+    
     # since rgb values can be interpreted as 3d-vectors the smallest distance between them is going to give us the color out of the array that best matches the given one
-    for current_col in colors:
-        distances = np.sqrt(np.sum((current_col-color)**2,axis = 1))
+    distances = np.sqrt(np.sum((colors-color)**2,axis = 1))
     return np.where(distances == np.amin(distances))
     
 def glue_images(images):
@@ -89,11 +85,11 @@ def glue_images(images):
 
     return main_img
 
-def generate_mosaic(main_image,images,granulation):
+def generate_mosaic(main_image,images):
     """generate the mosaic given a main image and an array of input images"""
 
     print("The main image is being sliced")
-    target_images = split(main_image,granulation)
+    target_images = split(main_image)
 
     print("Finding the best placement for the images")
     output_images = []
@@ -104,7 +100,7 @@ def generate_mosaic(main_image,images,granulation):
     avgs = []
     for image in images:
         avgs.append(average_color(image))
-    print(np.array(target_images))
+
     for image in target_images:
         target_avg = average_color(image)
         match_index = best_match_index(target_avg,avgs)
@@ -132,14 +128,15 @@ def main():
     print("unpacking the photos...")    
 
     main = Image.open(f'{os.getcwd()}/{args.main_image}')
-    input_images = get_tiles(args.folder,int(args.granulation))
+    input_images = get_tiles(args.folder,args.granulation)
+    print(input_images)
     if input_images == []:
       print('No input images found in %s. Exiting.' % (args.folder, ))
       exit()
 
     print('generating the mosaic...')
 
-    mosaic = generate_mosaic(main,input_images,int(args.granulation))
+    mosaic = generate_mosaic(main,input_images)
     mosaic.save("generated","PNG")
     print("done here,come back for more")
 
